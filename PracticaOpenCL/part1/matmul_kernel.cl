@@ -1,5 +1,12 @@
-/* Matrix multiplication - Kernel code
- * Matrix dimensions are assumed to be multiples of BLOCK_SIZE */
+/////////////////////////////////////////////////////////////////////
+// Matrix multiplication - Kernel code [Corresponding to part 2]
+// ------------------------------------------------------------------
+// OpenCL Kernel, using just 1 WorkItem implements the same algorithm
+// that we've got in standart C.  
+/////////////////////////////////////////////////////////////////////  
+
+
+/* Matrix dimensions are assumed to be multiples of BLOCK_SIZE */
 float doAPoint( __private int x, __private int y, __global float* A,__global float *B, __private const int sizeAX, __private const int sizeBX) {
   /* We assume sizeAX == sizeBY */
   __private float result=0;
@@ -10,7 +17,6 @@ float doAPoint( __private int x, __private int y, __global float* A,__global flo
     posB = (step*sizeBX) + x;
     result = result + A[posA] *B[posB];
   }
-
   return result;
 }
 
@@ -23,6 +29,5 @@ __kernel void MatMulKernel(int size, __global float *A, __global float *B, __glo
       C[(y*size)+x] = doAPoint(x, y, A, B, size, size);
   }
 
-  //barrier(CLK_GLOBAL_MEM_FENCE);
-
+  barrier(CLK_GLOBAL_MEM_FENCE);
 }

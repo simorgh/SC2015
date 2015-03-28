@@ -1,5 +1,12 @@
-/* Matrix multiplication - Kernel code
- * Matrix dimensions are assumed to be multiples of BLOCK_SIZE */
+/////////////////////////////////////////////////////////////////////
+// Matrix multiplication - Kernel code [Corresponding to part 3]
+// ------------------------------------------------------------------
+// OpenCL Kernel, using as many WorkItem as we've got in 'x' 
+// dimension.
+/////////////////////////////////////////////////////////////////////  
+
+
+/* Matrix dimensions are assumed to be multiples of BLOCK_SIZE */
 float doAPoint( __private int x, __private int y, __global float* A,__global float *B, __private const int sizeAX, __private const int sizeBX) {
   /* We assume sizeAX == sizeBY */
   __private float result=0;
@@ -10,13 +17,11 @@ float doAPoint( __private int x, __private int y, __global float* A,__global flo
     posB = (step*sizeBX) + x;
     result = result + A[posA] *B[posB];
   }
-
   return result;
 }
 
 /* Matrix multiplication kernel */
 __kernel void MatMulKernel(__global float *A, __global float *B, __global float *C){
-/* __local float *BA, __local float *BB){*/
 
   int idX = get_global_id(0);
   int idY = get_global_id(1);
