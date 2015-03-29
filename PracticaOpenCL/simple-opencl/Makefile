@@ -45,10 +45,10 @@ LIB_DIRS = "$(AMDAPPSDKROOT)lib\x86_64"
 endif
  
 all:
-	#$(CC) $(CFLAGS) $(INCL_P) -c simpleCL.c
+	$(CC) $(CFLAGS) $(INCL_P) -c simpleCL.c
 	#Linking Example
 	#$(CC) $(CFLAGS) *.o -o myapp.exe $(LIBS)
-	$(CC) $(CFLAGS) -I $(INC_DIRS) -L $(LIB_DIRS) -c simpleCL.c
+	#$(CC) $(CFLAGS) -I $(INC_DIRS) -L $(LIB_DIRS) -c simpleCL.c
 amd:
 	$(CC) $(CFLAGS_AMD) $(INCL_AMD) -c simpleCL.c
 	#Linking Example
