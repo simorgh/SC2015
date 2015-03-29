@@ -1,14 +1,13 @@
-/////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 // Matrix multiplication - Host code [Corresponding to part 4]
-// ------------------------------------------------------------------
+// ------------------------------------------------------------------------
 // OpenCL Kernel, calculation with __local:
-// This is the main point of this case study because it shows how we 
-// can take advantage of workgroups by using barrier and __local variables.
-// What we want at this point is to split the matrix multiplication problem
-// into submatrixes that fit in the local workgroup size.  
-/////////////////////////////////////////////////////////////////////  
+// This is the main point of this case study because it shows how we can 
+// take advantage of workgroups by using barrier and __local variables.
+// What we want at this point is to split the matrix multiplication
+// problem into submatrixes that fit in the local workgroup size.  
+//////////////////////////////////////////////////////////////////////////
 
-/* Host code */
 /* Matrices are stored in row-major order: */
 /* M(row, col) = *(M.elements + row * M.width + col) */
 
@@ -84,16 +83,14 @@ int main() {
   software = sclGetCLSoftware( "matmul_kernel.cl", "MatMulKernel", hardware[DEVICE_ID] );	// Get the software
 
   /* Kernel execution (with time caption) */
-  //int size = MATRIX_SIZE;
-  //int bsize = BLOCK_SIZE_H;
-  /* Kernel execution (with time caption) */
+  int msize = MATRIX_SIZE;
+  int bsize = BLOCK_SIZE_H;
   cl_ulong time = sclGetEventTime( hardware[DEVICE_ID], 
 	  sclManageArgsLaunchKernel( hardware[DEVICE_ID], software, global_size, local_size,
-		   /*" %a %a %r %r %w %N %N ", sizeof(int), &size, sizeof(int), &bsize,*/
-		   " %r %r %w ", 
-		   datasize, A, datasize, B, datasize, C ) );
-		   //sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V, 
-		   //sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V ));
+		   " %a %a %r %r %w %N %N ", sizeof(int), &msize, sizeof(int), &bsize,
+		   datasize, A, datasize, B, datasize, C,
+		   sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V, 
+		   sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V) );
 	
 
 
