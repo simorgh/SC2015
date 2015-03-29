@@ -17,12 +17,11 @@
 #
 ####################################################################### 
 #   SimpleOpenCL Version 0.09_01_10_2011 
-
+ 
 HOME    = $(PWD)
 CC      = gcc
-CPP	= g++
+CPP		= g++
 CFLAGS  = -Wall -Wextra -pedantic -O3
-
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
@@ -40,11 +39,16 @@ LIBS_AMD = $(LIBS)
 CFLAGS_AMD = $(CFLAGS)
 endif
 
+ifdef AMDAPPSDKROOT
+INC_DIRS = "$(AMDAPPSDKROOT)include"
+LIB_DIRS = "$(AMDAPPSDKROOT)lib\x86_64"
+endif
+ 
 all:
-	$(CC) $(CFLAGS) $(INCL_P) -c simpleCL.c
+	#$(CC) $(CFLAGS) $(INCL_P) -c simpleCL.c
 	#Linking Example
 	#$(CC) $(CFLAGS) *.o -o myapp.exe $(LIBS)
-
+	$(CC) $(CFLAGS) -I $(INC_DIRS) -L $(LIB_DIRS) -c simpleCL.c
 amd:
 	$(CC) $(CFLAGS_AMD) $(INCL_AMD) -c simpleCL.c
 	#Linking Example

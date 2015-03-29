@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include "../simple-opencl/simpleCL.h"
 
-#define BLOCK_SIZE_H 32
+#define BLOCK_SIZE_H 16
 #define BLOCK_SIZE_V 1
 #define ALPHA 0.0001
 #define MATRIX_SIZE 1024
@@ -84,7 +84,7 @@ int main() {
         sclManageArgsLaunchKernel( hardware[DEVICE_ID], software, global_size, local_size,
                            " %r %r %w ", datasize, A, datasize, B, datasize, C) );
   
-  /* 
+/* 
   //Show GPU results 
   printf("\nResultats GPU\n");
   for (int y=0; y<MATRIX_SIZE; y++){
@@ -92,9 +92,9 @@ int main() {
       printf("%f\t", C[(y*MATRIX_SIZE)+x]); 
     }
     printf("\n");
-  }*/
+  }
 
-  /* Check results */
+  //Check results
   printf("\nCalculant resultats a CPU\n");
   for (int y=0; y<MATRIX_SIZE; y++){
   	for (int x=0; x<MATRIX_SIZE; x++) {
@@ -111,7 +111,7 @@ int main() {
    		printf("\nError a la posicio %d de C. Valor de C = %f. Valor de Ctest= %f.",i,C[i],Ctest[i]);
   	}
   }
-
+*/
   printf("\nelapsed time: %lfs\n", 1.0e-9*time );
   return 0;
 }

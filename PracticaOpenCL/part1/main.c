@@ -14,7 +14,7 @@
 #define BLOCK_SIZE_H 1
 #define BLOCK_SIZE_V 1
 #define ALPHA 0.0001
-#define MATRIX_SIZE 16
+#define MATRIX_SIZE 1024
 #define DEVICE_ID 1
 
 /* Matrix multiplication - Host code */
@@ -57,7 +57,7 @@ int main() {
   /* Allocate space for input/output data */
   A = (float *) malloc(datasize);
   B = (float *) malloc(datasize);
-  C = (float *) malloc(datasize);
+  //C = (float *) malloc(datasize);
   Ctest = (float *) malloc(datasize);
 
   /* Initialize the input data */
@@ -66,8 +66,8 @@ int main() {
     B[i] = 0.001;
   }
 
-  /* NDRange 2D size initialization*/
-  size_t global_size[2]; //NOTA:quants WorkItems hi ha en total entre els eixos de X->[0]/Y->[1]
+  // NDRange 2D size initialization
+  size_t global_size[2];
   size_t local_size[2];
   size_t dataSize=sizeof(float)*elements;
   size_t localBlockSize = sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V;
@@ -75,18 +75,18 @@ int main() {
   global_size[0]=1; global_size[1]=1;
   local_size[0]=BLOCK_SIZE_H; local_size[1]=BLOCK_SIZE_V;
   
-  /* Inicialitzar hardware i software */
+  // Inicialitzar hardware i software
   hardware = sclGetAllHardware(&found); // Get the hardware
   software = sclGetCLSoftware( "matmul_kernel.cl", "MatMulKernel", hardware[DEVICE_ID] ); // Get the software
 
-  /* Kernel execution (with time caption) */
+  // Kernel execution (with time caption)
   int size = MATRIX_SIZE;
   cl_ulong time = sclGetEventTime( hardware[DEVICE_ID], 
         sclManageArgsLaunchKernel( hardware[DEVICE_ID], software, global_size, local_size,
                            " %a %r %r %w ", sizeof(int), &size, datasize, A, datasize, B, datasize, C)
   );
-  
-   
+
+/* 
   //Show GPU results 
   printf("\nResultats GPU\n");
   for (int y=0; y<MATRIX_SIZE; y++){
@@ -96,13 +96,14 @@ int main() {
     printf("\n");
   }
 
-  /* Check results */
+  //Check results
   printf("\nCalculant resultats a CPU\n");
   for (int y=0; y<MATRIX_SIZE; y++){
     for (int x=0; x<MATRIX_SIZE; x++) {
       Ctest[(y*MATRIX_SIZE)+x] = doAPoint(x,y,A,B,MATRIX_SIZE,MATRIX_SIZE);
     }
   }
+  
 
   int count = 0;
   for (int i=0; i<elements; i++){
@@ -113,7 +114,7 @@ int main() {
       printf("\nError a la posicio %d de C. Valor de C = %f. Valor de Ctest= %f.",i,C[i],Ctest[i]);
     }
   }
-  
+*/
   printf("\nelapsed time: %lfs\n", 1.0e-9*time );
   return 0;
 }

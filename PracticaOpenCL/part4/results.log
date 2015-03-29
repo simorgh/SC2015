@@ -1,0 +1,123 @@
+PLATFORM/DEVICES GENERAL:
+=============================================================
+Group 1 with 1 devices
+Group 2 with 1 devices
+Group 3 with 1 devices
+ Device 0
+ Platform name: Intel(R) OpenCL
+ Vendor: Intel(R) Corporation
+ Device name: Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
+ Device 1
+ Platform name: AMD Accelerated Parallel Processing
+ Vendor: Advanced Micro Devices, Inc.
+ Device name: Tahiti
+ Device 2
+ Platform name: AMD Accelerated Parallel Processing
+ Vendor: Advanced Micro Devices, Inc.
+ Device name: Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
+=============================================================
+
+*********************************************************
+PART 4 - MATRIX_SIZE 128 (16x16)
+*********************************************************
+	Device 0
+	elapsed time: 0.000134s
+	real    0m0.295s
+	user    0m0.218s
+	sys     0m0.062s
+	-------------------------------------------------------
+	Device 1
+	elapsed time: 0.000040s
+	real    0m0.310s
+	user    0m0.203s
+	sys     0m0.078s
+	-------------------------------------------------------
+	Device 2
+	elapsed time: 0.001356s
+	real    0m0.350s
+	user    0m0.218s
+	sys     0m0.078s
+
+*********************************************************
+PART 4 - MATRIX_SIZE 1024 (16x16)
+*********************************************************
+	Device 0
+	elapsed time: 0.025548s
+	real    0m0.332s
+	user    0m0.343s
+	sys     0m0.078s
+	-------------------------------------------------------
+	Device 1
+	elapsed time: 0.005685s
+	real    0m0.312s
+	user    0m0.234s
+	sys     0m0.031s
+	-------------------------------------------------------
+	Device 2
+	elapsed time: 0.654821s
+	real    0m1.018s
+	user    0m5.421s
+	sys     0m0.109s
+	
+*********************************************************
+PART 4 - MATRIX_SIZE 2048 (16x16)
+*********************************************************
+	Device 0
+	elapsed time: 0.277477s
+	real    0m0.598s
+	user    0m2.453s
+	sys     0m0.093s
+	-------------------------------------------------------
+	Device 1
+	elapsed time: 0.028223s
+	real    0m0.364s
+	user    0m0.187s
+	sys     0m0.078s
+	-------------------------------------------------------
+	Device 2
+	elapsed time: 5.359611s
+	real    0m5.710s
+	user    0m42.937s
+	sys     0m0.140s
+
+*********************************************************
+PART 4 - MATRIX_SIZE 4096 (16x16)
+*********************************************************
+	Device 0
+	elapsed time: 2.405622s
+	real    0m2.833s
+	user    0m19.531s
+	sys     0m0.187s
+	-------------------------------------------------------
+	Device 1
+	elapsed time: 0.193567s
+	real    0m0.576s
+	user    0m0.234s
+	sys     0m0.078s
+	-------------------------------------------------------
+	Device 2
+	elapsed time: 43.118000s
+	real    0m43.558s
+	user    5m44.625s
+	sys     0m0.156s
+
+*********************************************************
+PART 4 - MATRIX_SIZE 8192 (16x16)
+*********************************************************
+	Device 0
+	elapsed time: 20.628586s
+	real    0m21.976s
+	user    2m45.171s
+	sys     0m1.156s
+	-------------------------------------------------------
+	Device 1
+	elapsed time: 1.594170s
+	real    0m2.177s
+	user    0m0.562s
+	sys     0m0.593s
+	-------------------------------------------------------
+	Device 2
+	elapsed time: 347.431952s
+	real    5m48.153s
+	user    46m9.296s
+	sys     0m0.484s

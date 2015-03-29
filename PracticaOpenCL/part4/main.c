@@ -1,8 +1,11 @@
 /////////////////////////////////////////////////////////////////////
 // Matrix multiplication - Host code [Corresponding to part 4]
 // ------------------------------------------------------------------
-// OpenCL Kernel, using just 1 WorkItem implements the same algorithm
-// that we've got in standart C.  
+// OpenCL Kernel, calculation with __local:
+// This is the main point of this case study because it shows how we 
+// can take advantage of workgroups by using barrier and __local variables.
+// What we want at this point is to split the matrix multiplication problem
+// into submatrixes that fit in the local workgroup size.  
 /////////////////////////////////////////////////////////////////////  
 
 /* Host code */
@@ -68,7 +71,7 @@ int main() {
   }
 
   /* NDRange 2D size initialization*/
-  size_t global_size[2]; //NOTA:quants WorkItems hi ha en total entre els eixos de X->[0]/Y->[1]
+  size_t global_size[2];
   size_t local_size[2];
   size_t dataSize=sizeof(float)*elements;
   size_t localBlockSize = sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V;
@@ -77,39 +80,40 @@ int main() {
   local_size[0]=BLOCK_SIZE_H; local_size[1]=BLOCK_SIZE_V;
   
   /* Init hardware & software */
+  hardware = sclGetAllHardware(&found);	// Get the hardware
+  software = sclGetCLSoftware( "matmul_kernel.cl", "MatMulKernel", hardware[DEVICE_ID] );	// Get the software
 
-  // Get the hardware
-  hardware = sclGetAllHardware(&found);
+  /* Kernel execution (with time caption) */
+  //int size = MATRIX_SIZE;
+  //int bsize = BLOCK_SIZE_H;
+  /* Kernel execution (with time caption) */
+  cl_ulong time = sclGetEventTime( hardware[DEVICE_ID], 
+	  sclManageArgsLaunchKernel( hardware[DEVICE_ID], software, global_size, local_size,
+		   /*" %a %a %r %r %w %N %N ", sizeof(int), &size, sizeof(int), &bsize,*/
+		   " %r %r %w ", 
+		   datasize, A, datasize, B, datasize, C ) );
+		   //sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V, 
+		   //sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V ));
+	
 
-  // Get the software
-  software = sclGetCLSoftware( "matmul_kernel.cl", "MatMulKernel", hardware[DEVICE_ID] );
 
-  /* Kernel execution */
-  int size = MATRIX_SIZE;
-  int bsize = BLOCK_SIZE_H;
-  sclManageArgsLaunchKernel( hardware[DEVICE_ID], software, global_size, local_size,
-                           " %a %a %r %r %w %N %N", sizeof(int), &size, sizeof(int), &bsize,
-                           datasize, A, datasize, B, datasize, C,
-                           sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V, 
-                           sizeof(float)*BLOCK_SIZE_H*BLOCK_SIZE_V );
-
-  /* Show results */
+  /* Show results 
   printf("\nResultats GPU\n");
   for (int y=0; y<MATRIX_SIZE; y++){
     for (int x=0; x<MATRIX_SIZE; x++) {
       printf("%f\t", C[(y*MATRIX_SIZE)+x]); 
     }
     printf("\n");
-  }
+  }*/
   
-  /* Check results */
+  /* Check results 
   printf("\nCalculant resultats a CPU...\n");
   for (int y=0; y<MATRIX_SIZE; y++){
   	for (int x=0; x<MATRIX_SIZE; x++) {
   	  Ctest[(y*MATRIX_SIZE)+x] = doAPoint(x,y,A,B,MATRIX_SIZE,MATRIX_SIZE);
   	}
   }
-
+  
   int count = 0;
   for (int i=0; i<elements; i++){
   	diff=C[i]-Ctest[i];
@@ -117,15 +121,9 @@ int main() {
   		count++;
    		printf("\nError a la posicio %d de C. Valor de C = %f. Valor de Ctest= %f.",i,C[i],Ctest[i]);
   	}
-  }
-  printf("\n");
-
-  /*
-    NOTA: Per comprovar el temps que triga la CPU podem o bé usar time (més 'fair' perque tindra en compta el 
-    temps de transferencia, <temps d'accés o latència>) via CLI -->(cal comentar la part de HOST!). 
-    O bé, usar la comanda cl_ulong sclManageArgsLaunchKernel (crear event, capturar el retorn i pasarli el event a 
-    sclGetEventTime amb la variable HARDWARE utilitzada, ens retornara el temps que podrem imprimir per pantalla).
-  */
+  }*/
+  
+  printf("\nelapsed time: %lfs\n", 1.0e-9*time );
   return 0;
 }
 
