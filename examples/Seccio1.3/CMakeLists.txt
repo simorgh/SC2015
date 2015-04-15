@@ -1,0 +1,4 @@
+PROJECT( opencv )
+FIND_PACKAGE( OpenCV REQUIRED )
+ADD_EXECUTABLE( face face.cpp )
+TARGET_LINK_LIBRARIES( face ${OpenCV_LIBS} )
