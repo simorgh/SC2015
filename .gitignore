@@ -36,3 +36,6 @@ SimpleOpenCL_WithExamples/
 sc_note
 *~
 *.save
+
+# OSx temp files omision:
+*.DS_Store
