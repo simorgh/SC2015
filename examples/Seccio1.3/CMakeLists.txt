@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
 PROJECT( opencv )
 FIND_PACKAGE( OpenCV REQUIRED )
 ADD_EXECUTABLE( face face.cpp )
