@@ -1,9 +1,13 @@
 #include "menu.h"
 
-int main(int argc, char *argv[])
-{
+/**
+ * @brief main
+ * @param argc
+ * @param argv
+ * @return
+ */
+int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
-
     QMainMenu window;
 
     window.move(300, 300);

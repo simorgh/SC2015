@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Practica_OpenMP
 TEMPLATE = app
-
+INCLUDEPATH += "/usr/local/include/opencv2"
 
 SOURCES +=  main.cpp\
             mainwindow.cpp \
@@ -19,15 +19,12 @@ SOURCES +=  main.cpp\
 HEADERS  += mainwindow.h \
             menu.h
 
-
 LIBS += `pkg-config opencv --libs`
 
-QMAKE_CXXFLAGS+= -fopenmp
-QMAKE_LFLAGS +=  -fopenmp
+#QMAKE_CXXFLAGS+= -openmp
+#QMAKE_LFLAGS +=  -openmp
 
-DISTFILES += \
-    image1.png \
-    image2.png \
-    image3.png \
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS   += -fopenmp
 
 FORMS    += mainwindow.ui
