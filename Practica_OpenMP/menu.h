@@ -1,8 +1,7 @@
 #pragma once
 
-#include <omp.h>
+//#include <omp.h>
 #include <QWidget>
-
 #include <QPushButton>
 #include <QApplication>
 #include <QGridLayout>
@@ -13,17 +12,16 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 
-class QMainMenu : public QWidget
-{
+class QMainMenu : public QWidget {
 Q_OBJECT
 
- public:
-   QMainMenu(QWidget *parent = 0);
+     public:
+       QMainMenu(QWidget *parent = 0);
 
-private slots:
-    void OnShowPressed();
+    private slots:
+        void OnShowPressed();
 
-  private:
-    QPushButton *show_btn;
-    QPushButton *empty_btn;
+    private:
+        QPushButton *show_btn;
+        QPushButton *empty_btn;
 };

@@ -1,16 +1,18 @@
-
 #include "menu.h"
 
 using namespace std;
 using namespace cv;
 
-QMainMenu::QMainMenu(QWidget *parent)
-    : QWidget(parent)
-{
-#pragma omp parallel
-    {
+/**
+ * @brief QMainMenu::QMainMenu
+ * @param parent
+ */
+QMainMenu::QMainMenu(QWidget *parent) : QWidget(parent) {
+/*
+ *  #pragma omp parallel {
         printf("Hello from thread %d, nthreads %d\n", omp_get_thread_num(), omp_get_num_threads());
     }
+*/
     show_btn = new QPushButton("Show images", this);
     show_btn->move(20, 50);
 
@@ -18,14 +20,13 @@ QMainMenu::QMainMenu(QWidget *parent)
     empty_btn->move(23, 80);
 
     connect(show_btn, SIGNAL(clicked()), this, SLOT(OnShowPressed()));
-
-
 }
 
 
-
-void QMainMenu::OnShowPressed()
-{
+/**
+ * @brief QMainMenu::OnShowPressed
+ */
+void QMainMenu::OnShowPressed() {
     QWidget *imagesWidget = new QWidget();
     QGridLayout *grid = new QGridLayout(imagesWidget);
 
@@ -35,8 +36,7 @@ void QMainMenu::OnShowPressed()
     QList<QString> filesList;
     filesList << "../Practica_OpenMP/image1.png" << "../Practica_OpenMP/image2.png" << "../Practica_OpenMP/image3.png";
 
-    foreach(QFileInfo fileInfo, filesList)
-    {
+    foreach(QFileInfo fileInfo, filesList) {
         tempFileName = fileInfo.absoluteFilePath();
         cout << tempFileName.toStdString() << endl;
         Mat img;
