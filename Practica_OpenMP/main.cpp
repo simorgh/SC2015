@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     QMainMenu window;
 
     window.move(300, 300);
-    window.setWindowTitle("View Images");
+    window.setWindowTitle("Pràctica OpenMP");
     window.show();
 
     return app.exec();
