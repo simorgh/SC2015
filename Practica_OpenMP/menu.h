@@ -24,9 +24,10 @@ Q_OBJECT
 
     private slots:
         void OnShowPressed();
+        void OnSearchPressed();
 
     private:
-        QPushButton *show_btn;
-        QPushButton *empty_btn;
+        QPushButton *loaddb_btn;
+        QPushButton *search_btn;
         QFileDialog *fileChooser;
 };
