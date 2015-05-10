@@ -2,7 +2,13 @@
 #define MAINWINDOW_H
 //#include <omp.h>
 #include <QMainWindow>
-#include<QFileDialog>
+#include <QApplication>
+#include <QImage>
+#include <QLabel>
+#include <QList>
+#include <QString>
+#include <QFileDialog>
+#include <QListWidgetItem>
 #include <fstream>
 #include <string>
 #include <strstream>
@@ -26,16 +32,17 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
-
     void on_loadDatabase_triggered();
-
     void on_selectImage_triggered();
+    void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
 
 private:
     int identifier;
+    QString dbLocation;
     histogramManager *hm;
     Ui::MainWindow *ui;
+
+    void showResults();
 };
 
 #endif // MAINWINDOW_H
