@@ -14,11 +14,9 @@ INCLUDEPATH += "/usr/local/include/opencv2"
 
 SOURCES +=  main.cpp\
             mainwindow.cpp \
-            menu.cpp \
             histogramManager.cpp
 
 HEADERS  += mainwindow.h \
-            menu.h \
             histogramManager.h
 
 LIBS += `pkg-config opencv --libs`
