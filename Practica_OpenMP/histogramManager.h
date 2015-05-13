@@ -11,7 +11,7 @@
 class histogramManager  {
 public:
 void extractHistogram(std::string image,std::string xml);
-void compareHistograms(std::string hist1, std::string hist2, int method);
+double compareHistograms(std::string hist1, std::string hist2, int method);
 
 };
 #endif // HISTOGRAMMANAGER_H

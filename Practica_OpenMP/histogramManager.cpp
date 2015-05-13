@@ -3,26 +3,25 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * @brief histogramManager::extractHistogram
+ * @param image
+ * @param xml
+ */
 void histogramManager::extractHistogram(string image,string xml){
     Mat src_test, hsv_test;
     vector<Mat> hsv_planes;
 
-    /// Load two images with different environment settings
-    /*if( argc < 3 )
-    { printf("** Error. Usage: ./histextract <image> <file.xml>\n");
-      return -1;
-    }*/
-
     // Load image
     src_test = imread(image, CV_LOAD_IMAGE_COLOR);
 
-    /// Convert to HSV
+    // Convert to HSV
     cvtColor(src_test, hsv_test, CV_BGR2HSV );
 
     // Extract HSV planes
     split(hsv_test, hsv_planes);
 
-    /// Bins to use
+    // Bins to use
     int h_bins = 50; int s_bins = 50; int v_bins = 100;
 
     // Ranges
@@ -35,10 +34,10 @@ void histogramManager::extractHistogram(string image,string xml){
     float vrang[] = {0, 256};
     const float *v_ranges = { vrang };
 
-    /// Histograms
+    // Histograms
     Mat hist_h, hist_s, hist_v;
 
-    /// Calculate the histogram for the H image
+    // Calculate the histogram for the H image
     calcHist( &hsv_planes[0], 1, 0, Mat(), hist_h, 1, &h_bins, &h_ranges, true, false );
     normalize( hist_h, hist_h, 0, 1, NORM_MINMAX, -1, Mat() );
 
@@ -50,23 +49,25 @@ void histogramManager::extractHistogram(string image,string xml){
 
     // Store histograms on disc
     FileStorage fs(xml, FileStorage::WRITE);
-
     fs << "imageName" << image;
     fs << "hist_h" << hist_h;
     fs << "hist_s" << hist_s;
     fs << "hist_v" << hist_v;
-
     fs.release();
+}
 
-    //return 0;
-  }
-
-void histogramManager::compareHistograms(string hist1, string hist2, int method){
-    /// Load two images with different environment settings
+/**
+ * @brief histogramManager::compareHistograms
+ * @param hist1
+ * @param hist2
+ * @param method
+ * @return
+ */
+double histogramManager::compareHistograms(string hist1, string hist2, int method){
+    // Load two images with different environment settings
 
     int compare_method;
 
-    //method = atoi(argv[3]);
     if (method == 1)
       compare_method = CV_COMP_CORREL; // Correlation
     else if (method == 2)
@@ -77,7 +78,7 @@ void histogramManager::compareHistograms(string hist1, string hist2, int method)
       compare_method = CV_COMP_BHATTACHARYYA; // Bhattacharyya distance
     else {
       printf("ERROR: no valid value for compare_method\n");
-      exit(1);
+      return -1;
     }
 
     Mat hist_h1, hist_s1, hist_v1;
@@ -91,20 +92,19 @@ void histogramManager::compareHistograms(string hist1, string hist2, int method)
     fs1["hist_h"] >> hist_h1;
     fs1["hist_s"] >> hist_s1;
     fs1["hist_v"] >> hist_v1;
-
     fs1.release();
 
     // Read histogram2
     FileStorage fs2(hist2, FileStorage::READ);
+
     string fname2;
     fs2["imageName"] >> fname2;
     fs2["hist_h"] >> hist_h2;
     fs2["hist_s"] >> hist_s2;
     fs2["hist_v"] >> hist_v2;
-
     fs2.release();
 
-    /// Histogram comparison
+    // Histogram comparison
     double comphist_h = compareHist( hist_h1, hist_h2, compare_method);
     double comphist_s = compareHist( hist_s1, hist_s2, compare_method);
     double comphist_v = compareHist( hist_v1, hist_v2, compare_method);
@@ -113,5 +113,5 @@ void histogramManager::compareHistograms(string hist1, string hist2, int method)
     cout << "Comparing " << fname1 << " and " << fname2 << endl;
     cout << "Method " << method << ", Result " << comphist_h + comphist_s + comphist_v << endl;
 
-    //return 0;
-  }
+    return comphist_h + comphist_s + comphist_v;
+}

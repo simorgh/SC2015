@@ -32,7 +32,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_loadDatabase_triggered();
+    void on_importDatabase_triggered();
     void on_selectImage_triggered();
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
 
@@ -44,6 +44,8 @@ private:
     Ui::MainWindow *ui;
 
     void showResults();
+    void loadData();
+    void getDir(QList<QString> &fileList, std::string ext);
 };
 
 #endif // MAINWINDOW_H

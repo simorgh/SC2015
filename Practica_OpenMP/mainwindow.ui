@@ -74,19 +74,20 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="loadDatabase"/>
+    <addaction name="importDatabase"/>
+    <addaction name="separator"/>
     <addaction name="selectImage"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAbout_us"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="loadDatabase">
+  <action name="importDatabase">
    <property name="checkable">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Load Database...</string>
+    <string>Import Database...</string>
    </property>
   </action>
   <action name="selectImage">
