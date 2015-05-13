@@ -48,11 +48,11 @@ void MainWindow::on_importDatabase_triggered() {
         string pathHist = this->dbHistLocation.toStdString()+"hist_"+number+".xml";
         imwrite(pathIm, img);
 
-        cout<<"\tGenerating histogram for "<<pathIm.c_str()<< endl;
+        cout<<"\tGenerating histogram for " << pathIm.c_str() << endl;
         hm->extractHistogram(pathIm, pathHist);
     }
 
-    // Store identifier on disc
+    /// store identifier on disc
     ofstream out;
     out.open ("../db/.id");
     out << this->identifier;
@@ -83,15 +83,27 @@ void MainWindow::on_selectImage_triggered() {
     ui->label->setPixmap(QPixmap::fromImage(image));
     ui->label->show();
 
-    // selected image doesn't have to belong to the db so we have to extract its histogram
+    /// selected image doesn't have to belong to the db so we have to extract its histogram
     hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
     QList<QString> filesList;
-    getDir(filesList, ".xml");
+    getDir(filesList, XML);
 
-    // let's compare image histograms...
-    for (int i = 0; i < filesList.size(); i++){
-        hm->compareHistograms(this->dbHistLocation.toStdString()+"selected.xml",filesList.at(i).toStdString(),3);
+    /// let's compare image histograms...
+    //map<int, double> results;
+    vector< pair<double, int> > result;
+    for (int i=0; i<filesList.size(); i++){
+        result.push_back(make_pair(
+                hm->compareHistograms(this->dbHistLocation.toStdString() + "selected.xml", filesList.at(i).toStdString(), 3), i));
     }
+
+    sort(result.begin(), result.end());
+    for (int i=result.size()-1; i>=0; i--){
+        cout << result[i].second << "\t" << result[i].first << endl;
+    }
+
+
+
+
 }
 
 /**
@@ -130,7 +142,7 @@ void MainWindow::showResults(){
 }
 
 void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
-     QString path = this->dbImageLocation+item->text();
+     QString path = this->dbImageLocation + item->text();
      Mat img;
      img = imread(path.toStdString(), CV_LOAD_IMAGE_UNCHANGED );
      cvtColor(img, img, CV_BGR2RGB);
@@ -156,63 +168,56 @@ void MainWindow::loadData(){
         if(!QDir("../db/histograms").exists()) QDir().mkdir("../db/histograms");
     } else {
 
-        // retrieve identifier!
+        /// retrieve identifier!
         ifstream in;
         in.open ("../db/.id");
         in >> this->identifier;
         in.close();
 
-        // load images
+        /// load images
         QStringList backup;
-        getDir(backup, ".jpg");
+        getDir(backup, JPG);
         ui->listWidget->addItems(backup);
         ui->listWidget->setEnabled(true);
     }
 }
 
 /**
- * @brief getdir
- * @param filesList
- * @param ext
+ * Fetch directory data depending on a given extension (.xml, .jpg)
+ *
+ * @brief MainWindow::getDir
+ * @param fileList
+ * @param type
  */
-void MainWindow::getDir(QList<QString> &fileList, string ext) {
+void MainWindow::getDir(QList<QString> &fileList, F_TYPE type) {
     DIR *dp;
     struct dirent *dirp;
     QString location;
-    cout << "@getDir" << endl;
+    string ext;
 
-    if (strcmp(ext.c_str(), ".xml")==0) location = this->dbHistLocation;
-    else if (strcmp(ext.c_str(),".jpg")==0) location = this->dbImageLocation;
-    else return;
-    cout << "location: " << location.toStdString().c_str() << endl;
+    if (type == XML){
+        location = this->dbHistLocation;
+        ext = ".xml";
+    } else {
+        location = this->dbImageLocation;
+        ext = ".jpg";
+    }
 
     if((dp  = opendir(location.toStdString().c_str())) == NULL) {
         cout << "Error opening "  << endl;
     }
 
-    // retrieve file into fileList
+    /// retrieve file into fileList
     while ((dirp = readdir(dp)) != NULL) {
-        int len = strlen (dirp->d_name);
+        int len = strlen(dirp->d_name);
         if (len >= 4) {
             if (strcmp (ext.c_str(), &(dirp->d_name[len-4])) == 0) {
-                fileList << (location + QString::fromStdString(dirp->d_name));
+                if (type == XML) fileList << (location + QString::fromStdString(dirp->d_name));
+                else fileList << QString::fromStdString(dirp->d_name);
                 cout << "added " <<  (location + QString::fromStdString(dirp->d_name)).toStdString().c_str() << endl;
             }
         }
     }
-
     closedir(dp);
+    sort(fileList.begin(), fileList.end());
 }
-
-/*
-int print_dir() {
-    string dir = string(".");
-    vector<string> files = vector<string>();
-
-    getdir(dir,files);
-    for (unsigned int i = 0;i < files.size();i++) {
-        cout << files[i] << endl;
-    }
-    return 0;
-}
-*/

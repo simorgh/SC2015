@@ -110,8 +110,8 @@ double histogramManager::compareHistograms(string hist1, string hist2, int metho
     double comphist_v = compareHist( hist_v1, hist_v2, compare_method);
 
     // Compare
-    cout << "Comparing " << fname1 << " and " << fname2 << endl;
-    cout << "Method " << method << ", Result " << comphist_h + comphist_s + comphist_v << endl;
+    //cout << "Comparing " << fname1 << " and " << fname2 << endl;
+    //cout << "Method " << method << ", Result " << comphist_h + comphist_s + comphist_v << endl;
 
     return comphist_h + comphist_s + comphist_v;
 }

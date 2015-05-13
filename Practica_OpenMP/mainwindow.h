@@ -22,8 +22,7 @@ namespace Ui {
     class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -37,6 +36,8 @@ private slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
 
 private:
+    enum F_TYPE { XML, JPG };
+
     int identifier;
     QString dbImageLocation;
     QString dbHistLocation;
@@ -45,7 +46,7 @@ private:
 
     void showResults();
     void loadData();
-    void getDir(QList<QString> &fileList, std::string ext);
+    void getDir(QList<QString> &fileList, F_TYPE type);
 };
 
 #endif // MAINWINDOW_H
