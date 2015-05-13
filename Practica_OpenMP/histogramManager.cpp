@@ -63,10 +63,6 @@ void histogramManager::extractHistogram(string image,string xml){
 
 void histogramManager::compareHistograms(string hist1, string hist2, int method){
     /// Load two images with different environment settings
-    /*if( argc < 4 )
-    { printf("** Error. Usage: ./comparehist <hist1.xml> <hist2.xml> <compare_method>\n");
-      return -1;
-    }*/
 
     int compare_method;
 

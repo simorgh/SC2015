@@ -48,7 +48,7 @@ void MainWindow::on_loadDatabase_triggered()
         string pathIm = this->dbImageLocation.toStdString() + "img_"+number+".jpg";
 
         items.append(QString::fromStdString("img_"+number+".jpg"));
-        string pathHist = "../bd/histograms/hist_"+number+".xml";
+        string pathHist = this->dbHistLocation.toStdString()+"hist_"+number+".xml";
         imwrite(pathIm, img);
         cout<<"\tGenerating histogram for "<<pathIm.c_str()<< endl;
         hm->extractHistogram(tempFileName.toStdString(),pathHist);
@@ -64,22 +64,42 @@ void MainWindow::on_selectImage_triggered()
 {
     // TODO: Compare histograms
     QString s = QFileDialog::getOpenFileName(this, tr("Open File..."),
-                                                  QString(), tr("Image files (*.jpg *.png);;All Files (*)"));
+                          QString(), tr("Image files (*.jpg *.png);;All Files (*)"));
 
-     cout <<"select image trigered"<< s.toStdString().c_str()<< endl;
-     Mat img;
-     img = imread(s.toStdString(), CV_LOAD_IMAGE_COLOR);
-     QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
+    cout <<"select image trigered"<< s.toStdString().c_str()<< endl;
+    Mat img;
+    img = imread(s.toStdString(), CV_LOAD_IMAGE_COLOR);
+    QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
 
-     //cout << "Selecting image " << path.toStdString().c_str() << endl;
-     ui->label->setPixmap(QPixmap::fromImage(image));
-     ui->label->show();
+    //cout << "Selecting image " << path.toStdString().c_str() << endl;
+    ui->label->setPixmap(QPixmap::fromImage(image));
+    ui->label->show();
     /*The selected image doesn't have to belong to the db so we have to extract its histogram first */
-     hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
+    hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
 
+    QList<QString> filesList;
+    DIR *dp;
+    struct dirent *dirp;
+    if((dp  = opendir(this->dbHistLocation.toStdString().c_str())) == NULL) {
+        cout << "Error opening "  << endl;
+    }
 
+    while ((dirp = readdir(dp)) != NULL) {
+        int len = strlen (dirp->d_name);
+        if (len >= 4) {
+            if (strcmp (".xml", &(dirp->d_name[len - 4])) == 0) {
+                //cout << "file read " << dirp->d_name << endl;
+                filesList << (this->dbHistLocation+QString::fromStdString(dirp->d_name));
+                cout << "added " <<  (this->dbHistLocation+QString::fromStdString(dirp->d_name)).toStdString().c_str() << endl;
 
+            }
+        }
+    }
+    closedir(dp);
 
+    for (int i = 0; i < filesList.size(); i++){
+        hm->compareHistograms(this->dbHistLocation.toStdString()+"selected.xml",filesList.at(i).toStdString(),3);
+    }
 }
 
 void MainWindow::showResults(){
@@ -126,6 +146,7 @@ void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
      ui->label->show();
 }
 
+/**
 void getdir (string dir, vector<string> &files)
 {
     DIR *dp;
@@ -154,3 +175,4 @@ int print_dir()
     }
     return 0;
 }
+*/
