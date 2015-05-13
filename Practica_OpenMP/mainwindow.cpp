@@ -1,11 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include <dirent.h>
 using namespace std;
 using namespace cv;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    identifier = 1;
+    this->dbHistLocation = "../db/histograms/";
+    this->dbImageLocation = "../db/images/";
 }
 
 MainWindow::~MainWindow() {
@@ -23,6 +26,7 @@ void MainWindow::on_loadDatabase_triggered()
     ifstream file(s.toStdString().c_str());
     string str;
 
+    //getdir(this->dbImageLocation,filesList);
     while (getline(file, str))
     {
         string absPath = "../Practica_OpenMP/images/"+str ;
@@ -31,8 +35,8 @@ void MainWindow::on_loadDatabase_triggered()
 
     QString tempFileName;
     QList<QImage> images;
-    this->dbLocation = "../db/images/";
-    identifier = 1;
+
+
     cout << "Loading images..." << endl;
     foreach(QFileInfo fileInfo, filesList) {
         tempFileName = fileInfo.absoluteFilePath();
@@ -41,7 +45,7 @@ void MainWindow::on_loadDatabase_triggered()
         img = imread(tempFileName.toStdString(), CV_LOAD_IMAGE_COLOR);
 
         string number = format("%06d", identifier++);
-        string pathIm = this->dbLocation.toStdString() + "img_"+number+".jpg";
+        string pathIm = this->dbImageLocation.toStdString() + "img_"+number+".jpg";
 
         items.append(QString::fromStdString("img_"+number+".jpg"));
         string pathHist = "../bd/histograms/hist_"+number+".xml";
@@ -61,8 +65,8 @@ void MainWindow::on_selectImage_triggered()
     // TODO: Compare histograms
     QString s = QFileDialog::getOpenFileName(this, tr("Open File..."),
                                                   QString(), tr("Image files (*.jpg *.png);;All Files (*)"));
-    //TODO fill graphicsView area
-     cout <<"select image trigered"<< endl;
+
+     cout <<"select image trigered"<< s.toStdString().c_str()<< endl;
      Mat img;
      img = imread(s.toStdString(), CV_LOAD_IMAGE_COLOR);
      QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
@@ -70,6 +74,12 @@ void MainWindow::on_selectImage_triggered()
      //cout << "Selecting image " << path.toStdString().c_str() << endl;
      ui->label->setPixmap(QPixmap::fromImage(image));
      ui->label->show();
+    /*The selected image doesn't have to belong to the db so we have to extract its histogram first */
+     hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
+
+
+
+
 }
 
 void MainWindow::showResults(){
@@ -105,7 +115,7 @@ void MainWindow::showResults(){
 }
 
 void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
-     QString path = this->dbLocation+item->text();
+     QString path = this->dbImageLocation+item->text();
      Mat img;
      img = imread(path.toStdString(), CV_LOAD_IMAGE_UNCHANGED );
      QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
@@ -114,4 +124,33 @@ void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
      //cout << "Selecting image " << path.toStdString().c_str() << endl;
      ui->label->setPixmap(QPixmap::fromImage(image));
      ui->label->show();
+}
+
+void getdir (string dir, vector<string> &files)
+{
+    DIR *dp;
+    struct dirent *dirp;
+    if((dp  = opendir(dir.c_str())) == NULL) {
+        cout << "Error opening " << dir << endl;
+
+    }
+
+    while ((dirp = readdir(dp)) != NULL) {
+        files.push_back(string(dirp->d_name));
+    }
+    closedir(dp);
+
+}
+
+int print_dir()
+{
+    string dir = string(".");
+    vector<string> files = vector<string>();
+
+    getdir(dir,files);
+
+    for (unsigned int i = 0;i < files.size();i++) {
+        cout << files[i] << endl;
+    }
+    return 0;
 }

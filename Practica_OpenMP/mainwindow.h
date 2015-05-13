@@ -38,7 +38,8 @@ private slots:
 
 private:
     int identifier;
-    QString dbLocation;
+    QString dbImageLocation;
+    QString dbHistLocation;
     histogramManager *hm;
     Ui::MainWindow *ui;
 
