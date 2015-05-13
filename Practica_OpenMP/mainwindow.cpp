@@ -15,32 +15,40 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-
-void MainWindow::on_loadDatabase_triggered()
-{
+/**
+ * DATABASE CREATION
+ * logfile: find images -name *.jpg >> fileList.txt
+ * readlink -f image.jpg
+ *
+ * @brief MainWindow::on_loadDatabase_triggered
+ */
+void MainWindow::on_loadDatabase_triggered() {
     QString s = QFileDialog::getOpenFileName(this, tr("Open File..."),
-                                             QString(), tr("log files (*.txt *.log);;All Files (*)"));
+                    QString(), tr("log files (*.txt *.log);;All Files (*)"));
 
     QList<QString> filesList;
     QStringList items;
     ifstream file(s.toStdString().c_str());
-    string str;
 
-    //getdir(this->dbImageLocation,filesList);
-    while (getline(file, str))
-    {
-        string absPath = "../Practica_OpenMP/images/"+str ;
-        filesList << QString::fromUtf8(absPath.c_str());
+    string str;
+    while (getline(file, str)) {
+        //string absPath = "../Practica_OpenMP/images/" + str ;
+        filesList << QString::fromStdString("../"+str);
     }
 
+    /* creates file-tree if needed */
+    if(!QDir("../db").exists()){
+        QDir().mkdir("../db");
+        if(!QDir("../db/images").exists()) QDir().mkdir("../db/images");
+        if(!QDir("../db/histograms").exists()) QDir().mkdir("../db/histograms");
+    }
+
+
+
     QString tempFileName;
-    QList<QImage> images;
-
-
     cout << "Loading images..." << endl;
     foreach(QFileInfo fileInfo, filesList) {
         tempFileName = fileInfo.absoluteFilePath();
-        //items.append(fileInfo.fileName());
         Mat img;
         img = imread(tempFileName.toStdString(), CV_LOAD_IMAGE_COLOR);
 
@@ -48,40 +56,44 @@ void MainWindow::on_loadDatabase_triggered()
         string pathIm = this->dbImageLocation.toStdString() + "img_"+number+".jpg";
 
         items.append(QString::fromStdString("img_"+number+".jpg"));
-        string pathHist = "../bd/histograms/hist_"+number+".xml";
+        string pathHist = "../db/histograms/hist_"+number+".xml";
         imwrite(pathIm, img);
+
         cout<<"\tGenerating histogram for "<<pathIm.c_str()<< endl;
         hm->extractHistogram(tempFileName.toStdString(),pathHist);
-
-
     }
 
-   ui->listWidget->addItems(items);
-  // search_btn->setEnabled(true);
+    ui->listWidget->addItems(items);
+    ui->listWidget->setEnabled(true);
 }
 
-void MainWindow::on_selectImage_triggered()
-{
-    // TODO: Compare histograms
+/**
+ * Generates selected image histogram, then it's compared
+ * to db in order to get N best matches.
+ *
+ * @brief MainWindow::on_selectImage_triggered
+ */
+void MainWindow::on_selectImage_triggered() {
     QString s = QFileDialog::getOpenFileName(this, tr("Open File..."),
-                                                  QString(), tr("Image files (*.jpg *.png);;All Files (*)"));
+                                              QString(), tr("Image files (*.jpg *.png);;All Files (*)"));
 
-     cout <<"select image trigered"<< s.toStdString().c_str()<< endl;
-     Mat img;
-     img = imread(s.toStdString(), CV_LOAD_IMAGE_COLOR);
-     QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
+    cout <<"select image trigered"<< s.toStdString().c_str()<< endl;
+    Mat img;
+    img = imread(s.toStdString(), CV_LOAD_IMAGE_COLOR);
+    QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
 
-     //cout << "Selecting image " << path.toStdString().c_str() << endl;
-     ui->label->setPixmap(QPixmap::fromImage(image));
-     ui->label->show();
+    //cout << "Selecting image " << path.toStdString().c_str() << endl;
+    ui->label->setPixmap(QPixmap::fromImage(image));
+    ui->label->show();
+
     /*The selected image doesn't have to belong to the db so we have to extract its histogram first */
-     hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
-
-
-
+    hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
 
 }
 
+/**
+ * @brief MainWindow::showResults
+ */
 void MainWindow::showResults(){
 
     //QGridLayout *grid = new QGridLayout(this);
@@ -126,8 +138,12 @@ void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
      ui->label->show();
 }
 
-void getdir (string dir, vector<string> &files)
-{
+/**
+ * @brief getdir
+ * @param dir
+ * @param files
+ */
+void getdir(string dir, vector<string> &files) {
     DIR *dp;
     struct dirent *dirp;
     if((dp  = opendir(dir.c_str())) == NULL) {
@@ -142,8 +158,11 @@ void getdir (string dir, vector<string> &files)
 
 }
 
-int print_dir()
-{
+/**
+ * @brief print_dir
+ * @return
+ */
+int print_dir() {
     string dir = string(".");
     vector<string> files = vector<string>();
 
