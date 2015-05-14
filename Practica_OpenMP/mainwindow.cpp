@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <dirent.h>
+#include <QGridLayout>
+
 using namespace std;
 using namespace cv;
 
@@ -15,8 +17,13 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
+bool custom_sort(const pair<int, double> &a, const pair<int, double> &b){
+    return a.second > b.second;
+}
+
 /**
  * DATABASE CREATION
+ * -----------------------------------------------
  * logfile: find images -name *.jpg >> fileList.txt
  * readlink -f image.jpg
  *
@@ -25,7 +32,6 @@ MainWindow::~MainWindow() {
 void MainWindow::on_importDatabase_triggered() {
     QList<QString> filesList;
     QStringList items;
-
     QString s = QFileDialog::getOpenFileName(this, tr("Open File..."),
                     QString(), tr("log files (*.txt *.log);;All Files (*)"));
 
@@ -38,16 +44,18 @@ void MainWindow::on_importDatabase_triggered() {
     cout << "Loading images..." << endl;
     foreach(QFileInfo fileInfo, filesList) {
         tempFileName = fileInfo.absoluteFilePath();
+        string number = format("%06d", identifier++);
+
+        /// copying images to db...
         Mat img;
         img = imread(tempFileName.toStdString(), CV_LOAD_IMAGE_COLOR);
-
-        string number = format("%06d", identifier++);
-        string pathIm = this->dbImageLocation.toStdString() + "img_"+number+".jpg";
-
-        items.append(QString::fromStdString("img_"+number+".jpg"));
-        string pathHist = this->dbHistLocation.toStdString()+"hist_"+number+".xml";
+        string nameIm = "img_" + number + ".jpg";
+        string pathIm = this->dbImageLocation.toStdString() + nameIm;
         imwrite(pathIm, img);
+        items.append(QString::fromStdString(nameIm));
 
+        /// extracting img histogram ...
+        string pathHist = this->dbHistLocation.toStdString() + "hist_" + number + ".xml";
         cout<<"\tGenerating histogram for " << pathIm.c_str() << endl;
         hm->extractHistogram(pathIm, pathHist);
     }
@@ -63,6 +71,8 @@ void MainWindow::on_importDatabase_triggered() {
 }
 
 /**
+ * COMPUTE MATCHING FUNC.
+ * -----------------------------------------------
  * Generates selected image histogram, then it's compared
  * to db in order to get N best matches.
  *
@@ -83,62 +93,71 @@ void MainWindow::on_selectImage_triggered() {
     ui->label->setPixmap(QPixmap::fromImage(image));
     ui->label->show();
 
-    /// selected image doesn't have to belong to the db so we have to extract its histogram
+    /// selected image doesn't have to belong to the db so we must extract its histogram
     hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
     QList<QString> filesList;
     getDir(filesList, XML);
 
     /// let's compare image histograms...
-    //map<int, double> results;
-    vector< pair<double, int> > result;
+    vector< pair<int, double> > result;
     for (int i=0; i<filesList.size(); i++){
         result.push_back(make_pair(
-                hm->compareHistograms(this->dbHistLocation.toStdString() + "selected.xml", filesList.at(i).toStdString(), 3), i));
-    }
-
-    sort(result.begin(), result.end());
-    for (int i=result.size()-1; i>=0; i--){
-        cout << result[i].second << "\t" << result[i].first << endl;
+            i, hm->compareHistograms(this->dbHistLocation.toStdString() + "selected.xml", filesList.at(i).toStdString(), 3))
+        );
     }
 
 
+    //cout << "=============== RESULTS ===============" << endl;
+    sort(result.begin(), result.end(), custom_sort);
+    QList<QString> results;
+    /// get absolute path for each of N=4 top matches
+    for (int i=1; i<5; i++){
+        results << this->dbImageLocation + QString::fromStdString("img_" + format("%06d", result[i].first + 1) + ".jpg");
+        //cout << pathIm << "\t" << result[i].second << endl;
+    }
 
-
+    this->showResults(results);
 }
 
 /**
+ * DISPLAY TOP N MATCHES
+ * -----------------------------------------------
  * @brief MainWindow::showResults
+ * @param fileList
  */
-void MainWindow::showResults(){
+void MainWindow::showResults(QList<QString> &fileList){
 
-    //QGridLayout *grid = new QGridLayout(this);
+    QWidget *imagesWidget = new QWidget();
+    QGridLayout *grid = new QGridLayout(imagesWidget);
     QImage copy;
     QString tempFileName;
     QList<QImage> images;
-    QList<QString> filesList;
-    filesList << "../image1.png" << "../image2.png" << "../image3.png";
 
-    foreach(QFileInfo fileInfo, filesList){
+    foreach(QFileInfo fileInfo, fileList){
         tempFileName = fileInfo.absoluteFilePath();
         cout << tempFileName.toStdString() << endl;
+
         Mat img;
         img = imread(tempFileName.toStdString(), CV_LOAD_IMAGE_COLOR);
+        cvtColor(img, img, CV_BGR2RGB);
         QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
-        copy = image.scaled(200,200,Qt::KeepAspectRatio);
+        copy = image.scaled(300, 200);
+
         images.append(copy);
     }
 
-    for (int i = 0; i < 3; i++) {
-        for(int j = 0; j < 3; j++) {
-            QPixmap p(QPixmap::fromImage(images[i]));
+    int cont = 0;
+    for (int i = 0; i < 2; i++) {
+        for(int j = 0; j < 2; j++) {
+            QPixmap p(QPixmap::fromImage(images[cont++]));
             QLabel *label = new QLabel(this);
             label->setPixmap(p);
-            //ui->centralWidget->layout()->addWidget(label);
-            //grid->addWidget(label, i, j);
+            grid->addWidget(label, i, j);
         }
     }
 
-    //setLayout(grid);
+    imagesWidget->setLayout(grid);
+    imagesWidget->show();
 }
 
 void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
@@ -156,6 +175,8 @@ void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
 }
 
 /**
+ * LOAD DATABASE TREE
+ * -----------------------------------------------
  * creates file-tree if needed.
  * persistence for database using file .id
  * @brief createTree
@@ -195,7 +216,7 @@ void MainWindow::getDir(QList<QString> &fileList, F_TYPE type) {
     QString location;
     string ext;
 
-    if (type == XML){
+    if(type == XML) {
         location = this->dbHistLocation;
         ext = ".xml";
     } else {
@@ -214,7 +235,7 @@ void MainWindow::getDir(QList<QString> &fileList, F_TYPE type) {
             if (strcmp (ext.c_str(), &(dirp->d_name[len-4])) == 0) {
                 if (type == XML) fileList << (location + QString::fromStdString(dirp->d_name));
                 else fileList << QString::fromStdString(dirp->d_name);
-                cout << "added " <<  (location + QString::fromStdString(dirp->d_name)).toStdString().c_str() << endl;
+                //cout << "added " <<  (location + QString::fromStdString(dirp->d_name)).toStdString().c_str() << endl;
             }
         }
     }

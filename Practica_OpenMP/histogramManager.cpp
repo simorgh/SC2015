@@ -8,7 +8,7 @@ using namespace cv;
  * @param image
  * @param xml
  */
-void histogramManager::extractHistogram(string image,string xml){
+void histogramManager::extractHistogram(string image, string xml){
     Mat src_test, hsv_test;
     vector<Mat> hsv_planes;
 

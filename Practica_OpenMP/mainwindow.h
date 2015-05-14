@@ -44,7 +44,7 @@ private:
     histogramManager *hm;
     Ui::MainWindow *ui;
 
-    void showResults();
+    void showResults(QList<QString> &fileList);
     void loadData();
     void getDir(QList<QString> &fileList, F_TYPE type);
 };
