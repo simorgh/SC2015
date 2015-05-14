@@ -81,8 +81,9 @@ void MainWindow::on_importDatabase_triggered() {
 void MainWindow::on_selectImage_triggered() {
     QString s = QFileDialog::getOpenFileName(this, tr("Open File..."),
                           QString(), tr("Image files (*.jpg *.png);;All Files (*)"));
+    if(s == NULL) return;
 
-    cout <<"select image trigered"<< s.toStdString().c_str()<< endl;
+    cout <<"SELETED IMAGE is "<< s.toStdString().c_str()<< endl;
     Mat img;
     img = imread(s.toStdString(), CV_LOAD_IMAGE_COLOR);
     cvtColor(img, img, CV_BGR2RGB);
@@ -110,10 +111,17 @@ void MainWindow::on_selectImage_triggered() {
     //cout << "=============== RESULTS ===============" << endl;
     sort(result.begin(), result.end(), custom_sort);
     QList<QString> results;
+
     /// get absolute path for each of N=4 top matches
-    for (int i=1; i<5; i++){
-        results << this->dbImageLocation + QString::fromStdString("img_" + format("%06d", result[i].first + 1) + ".jpg");
-        //cout << pathIm << "\t" << result[i].second << endl;
+    int count =0, id = 0;
+    while(count < 4){
+        int num = result[id].first + 1;
+        if(num < this->identifier) {
+            results << this->dbImageLocation + QString::fromStdString("img_" + format("%06d", num) + ".jpg");
+            count++;
+        }
+
+        id++;
     }
 
     this->showResults(results);
@@ -179,7 +187,10 @@ void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
  * -----------------------------------------------
  * creates file-tree if needed.
  * persistence for database using file .id
- * @brief createTree
+ * @brief createTreehome/vroigrip8.alumnes/sc2015/db/images/img_000055.jpg
+/home/vroigrip8.alumnes/sc2015/db/images/img_000003.jpg
+/home/vroigrip8.alumnes/sc2015/db/images/img_000052.jpg
+/home/vroigrip8.alumnes/sc2015/db/images/img_000009.jpg
  */
 void MainWindow::loadData(){
     if(!QDir("../db").exists()){
