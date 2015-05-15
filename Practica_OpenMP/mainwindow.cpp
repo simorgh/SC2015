@@ -68,6 +68,7 @@ void MainWindow::on_importDatabase_triggered() {
 
     ui->listWidget->addItems(items);
     ui->listWidget->setEnabled(true);
+    ui->selectImage->setEnabled(true);
 }
 
 /**
@@ -100,9 +101,10 @@ void MainWindow::on_selectImage_triggered() {
     getDir(filesList, XML);
 
     /// let's compare image histograms...
-    vector< pair<int, double> > result;
+    vector< pair<int, double> > result(filesList.size());
+#pragma omp parallel for
     for (int i=0; i<filesList.size(); i++){
-        result.push_back(make_pair(
+        result[i] = (make_pair(
             i, hm->compareHistograms(this->dbHistLocation.toStdString() + "selected.xml", filesList.at(i).toStdString(), 3))
         );
     }
@@ -115,7 +117,8 @@ void MainWindow::on_selectImage_triggered() {
     /// get absolute path for each of N=4 top matches
     int count =0, id = 0;
     while(count < 4){
-        int num = result[id].first + 1;
+        int num = (result[id].first) + 1;
+        cout << "Num =  "<< num << endl;
         if(num < this->identifier) {
             results << this->dbImageLocation + QString::fromStdString("img_" + format("%06d", num) + ".jpg");
             count++;
@@ -134,7 +137,7 @@ void MainWindow::on_selectImage_triggered() {
  * @param fileList
  */
 void MainWindow::showResults(QList<QString> &fileList){
-
+    if(fileList.empty()) return;
     QWidget *imagesWidget = new QWidget();
     QGridLayout *grid = new QGridLayout(imagesWidget);
     QImage copy;
@@ -198,20 +201,24 @@ void MainWindow::loadData(){
         QDir().mkdir("../db");
         if(!QDir("../db/images").exists()) QDir().mkdir("../db/images");
         if(!QDir("../db/histograms").exists()) QDir().mkdir("../db/histograms");
-    } else {
 
-        /// retrieve identifier!
+    } else { /// tree exists
         ifstream in;
         in.open ("../db/.id");
-        in >> this->identifier;
-        in.close();
+        if(in.is_open()){   ///OK!
+            /// retrieve identifier!
+            in >> this->identifier;
 
-        /// load images
-        QStringList backup;
-        getDir(backup, JPG);
-        ui->listWidget->addItems(backup);
-        ui->listWidget->setEnabled(true);
+            /// load images
+            QStringList backup;
+            getDir(backup, JPG);
+            ui->listWidget->addItems(backup);
+            ui->listWidget->setEnabled(true);
+            ui->selectImage->setEnabled(true);
+            in.close();
+        } else this->identifier = 1; /// in case of '.id' file error
     }
+
 }
 
 /**

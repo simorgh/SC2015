@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>648</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuAbout_us">
@@ -91,6 +91,9 @@
    </property>
   </action>
   <action name="selectImage">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Select image</string>
    </property>
