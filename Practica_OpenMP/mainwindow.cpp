@@ -45,39 +45,45 @@ void MainWindow::on_importDatabase_triggered() {
 
 #pragma omp parallel
 {
-    #pragma omp for
+    #pragma omp single
     for(int i=0; i<filesList.size(); i++) {
-    //foreach(QFileInfo fileInfo, filesList) {
+        #pragma omp task
+        {
         QFileInfo fileInfo = filesList[i];
         tempFileName = fileInfo.absoluteFilePath();
         //string number = format("%06d", identifier++);
 
-    #pragma omp task
-    {
         /// copying images to db...
         Mat img;
         img = imread(tempFileName.toStdString(), CV_LOAD_IMAGE_COLOR);
         //string nameIm = "img_" + number + ".jpg";
         //string pathIm = this->dbImageLocation.toStdString() + "img_" + number + ".jpg";
-        imwrite(this->dbImageLocation.toStdString() + "img_" + format("%06d", identifier) + ".jpg", img);
-        items.append(QString::fromStdString("img_" + format("%06d", identifier++) + ".jpg"));
-    }
+        imwrite(this->dbImageLocation.toStdString() + "img_" + format("%06d", i+identifier) + ".jpg", img);
+        items.append(QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
 
-    #pragma omp taskwait
-    {
-        #pragma omp task
-        {
-            /// extracting img histogram ...
-            //string pathHist = this->dbHistLocation.toStdString() + "hist_" + number + ".xml";
-            //string pathIm = this->dbImageLocation.toStdString() + nameIm;
-            cout<<"\tGenerating histogram for " << endl;
-            hm->extractHistogram(this->dbImageLocation.toStdString() + "img_" + format("%06d", identifier) + ".jpg",
-                                 this->dbHistLocation.toStdString() + "hist_" + format("%06d", identifier) + ".xml");
         }
-    }
+
+        #pragma omp taskwait
+        {
+            #pragma omp task
+            {
+                /// extracting img histogram ...
+                //string pathHist = this->dbHistLocation.toStdString() + "hist_" + number + ".xml";
+                //string pathIm = this->dbImageLocation.toStdString() + nameIm;
+
+                cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
+                //<< this->dbImageLocation.toStdString() + "img_" + format("%06d", i+1) + ".jpg" << endl;
+
+                hm->extractHistogram(this->dbImageLocation.toStdString() + "img_" + format("%06d", i+identifier) + ".jpg",
+                                     this->dbHistLocation.toStdString() + "hist_" + format("%06d", i+identifier) + ".xml");
+
+            }
+            //this->identifier++;
+        }
 
     }
 }
+    //this->identifier = 99;
 
     /// store identifier on disc
     ofstream out;
@@ -121,6 +127,7 @@ void MainWindow::on_selectImage_triggered() {
 
     /// let's compare image histograms...
     vector< pair<int, double> > result(filesList.size());
+
 #pragma omp parallel for
     for (int i=0; i<filesList.size(); i++){
         result[i] = (make_pair(
@@ -209,10 +216,7 @@ void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
  * -----------------------------------------------
  * creates file-tree if needed.
  * persistence for database using file .id
- * @brief createTreehome/vroigrip8.alumnes/sc2015/db/images/img_000055.jpg
-/home/vroigrip8.alumnes/sc2015/db/images/img_000003.jpg
-/home/vroigrip8.alumnes/sc2015/db/images/img_000052.jpg
-/home/vroigrip8.alumnes/sc2015/db/images/img_000009.jpg
+ * @brief createTree
  */
 void MainWindow::loadData(){
     if(!QDir("../db").exists()){

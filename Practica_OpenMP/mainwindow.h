@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-//#include <omp.h>
+#include <omp.h>
 #include <QMainWindow>
 #include <QApplication>
 #include <QImage>
