@@ -46,22 +46,17 @@ void MainWindow::on_importDatabase_triggered() {
 #pragma omp parallel
 {
     #pragma omp single
+    {
     for(int i=0; i<filesList.size(); i++) {
+
         #pragma omp task
         {
         QFileInfo fileInfo = filesList[i];
-        tempFileName = fileInfo.absoluteFilePath();
-        //string number = format("%06d", identifier++);
-
-        /// copying images to db...
-        Mat img;
-        img = imread(tempFileName.toStdString(), CV_LOAD_IMAGE_COLOR);
-        //string nameIm = "img_" + number + ".jpg";
-        //string pathIm = this->dbImageLocation.toStdString() + "img_" + number + ".jpg";
-        imwrite(this->dbImageLocation.toStdString() + "img_" + format("%06d", i+identifier) + ".jpg", img);
+        QFile::copy(fileInfo.absoluteFilePath(), this->dbImageLocation + QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
         items.append(QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
 
         }
+
 
         #pragma omp taskwait
         {
@@ -71,19 +66,18 @@ void MainWindow::on_importDatabase_triggered() {
                 //string pathHist = this->dbHistLocation.toStdString() + "hist_" + number + ".xml";
                 //string pathIm = this->dbImageLocation.toStdString() + nameIm;
 
-                cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
-                //<< this->dbImageLocation.toStdString() + "img_" + format("%06d", i+1) + ".jpg" << endl;
-
-                hm->extractHistogram(this->dbImageLocation.toStdString() + "img_" + format("%06d", i+identifier) + ".jpg",
-                                     this->dbHistLocation.toStdString() + "hist_" + format("%06d", i+identifier) + ".xml");
+                //cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
+                hm->extractHistogram(this->dbImageLocation.toStdString() + "img_"  + format("%06d", i+identifier) + ".jpg",
+                                     this->dbHistLocation.toStdString()  + "hist_" + format("%06d", i+identifier) + ".xml");
 
             }
-            //this->identifier++;
-        }
+//            this->identifier = i;
+            }
 
     }
+    }
 }
-    //this->identifier = 99;
+    this->identifier = 30610;
 
     /// store identifier on disc
     ofstream out;
@@ -135,7 +129,6 @@ void MainWindow::on_selectImage_triggered() {
         );
     }
 
-
     //cout << "=============== RESULTS ===============" << endl;
     sort(result.begin(), result.end(), custom_sort);
     QList<QString> results;
@@ -149,7 +142,6 @@ void MainWindow::on_selectImage_triggered() {
             results << this->dbImageLocation + QString::fromStdString("img_" + format("%06d", num) + ".jpg");
             count++;
         }
-
         id++;
     }
 
