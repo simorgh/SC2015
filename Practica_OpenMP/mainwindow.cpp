@@ -42,23 +42,42 @@ void MainWindow::on_importDatabase_triggered() {
 
     QString tempFileName;
     cout << "Loading images..." << endl;
-    foreach(QFileInfo fileInfo, filesList) {
-        tempFileName = fileInfo.absoluteFilePath();
-        string number = format("%06d", identifier++);
 
+#pragma omp parallel
+{
+    #pragma omp for
+    for(int i=0; i<filesList.size(); i++) {
+    //foreach(QFileInfo fileInfo, filesList) {
+        QFileInfo fileInfo = filesList[i];
+        tempFileName = fileInfo.absoluteFilePath();
+        //string number = format("%06d", identifier++);
+
+    #pragma omp task
+    {
         /// copying images to db...
         Mat img;
         img = imread(tempFileName.toStdString(), CV_LOAD_IMAGE_COLOR);
-        string nameIm = "img_" + number + ".jpg";
-        string pathIm = this->dbImageLocation.toStdString() + nameIm;
-        imwrite(pathIm, img);
-        items.append(QString::fromStdString(nameIm));
-
-        /// extracting img histogram ...
-        string pathHist = this->dbHistLocation.toStdString() + "hist_" + number + ".xml";
-        cout<<"\tGenerating histogram for " << pathIm.c_str() << endl;
-        hm->extractHistogram(pathIm, pathHist);
+        //string nameIm = "img_" + number + ".jpg";
+        //string pathIm = this->dbImageLocation.toStdString() + "img_" + number + ".jpg";
+        imwrite(this->dbImageLocation.toStdString() + "img_" + format("%06d", identifier) + ".jpg", img);
+        items.append(QString::fromStdString("img_" + format("%06d", identifier++) + ".jpg"));
     }
+
+    #pragma omp taskwait
+    {
+        #pragma omp task
+        {
+            /// extracting img histogram ...
+            //string pathHist = this->dbHistLocation.toStdString() + "hist_" + number + ".xml";
+            //string pathIm = this->dbImageLocation.toStdString() + nameIm;
+            cout<<"\tGenerating histogram for " << endl;
+            hm->extractHistogram(this->dbImageLocation.toStdString() + "img_" + format("%06d", identifier) + ".jpg",
+                                 this->dbHistLocation.toStdString() + "hist_" + format("%06d", identifier) + ".xml");
+        }
+    }
+
+    }
+}
 
     /// store identifier on disc
     ofstream out;
