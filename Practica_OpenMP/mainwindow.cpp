@@ -54,9 +54,9 @@ void MainWindow::on_importDatabase_triggered() {
                              this->dbHistLocation.toStdString()  + "hist_" + format("%06d", i+identifier) + ".xml");
     }
 
-    this->identifier = ui->listWidget->count();
+    /// update + store identifier on disc
+    this->identifier += filesList.size();
 
-    /// store identifier on disc
     ofstream out;
     out.open ("../db/.id");
     out << this->identifier;
@@ -101,7 +101,7 @@ void MainWindow::on_selectImage_triggered() {
 
 #pragma omp parallel for
     for (int i=0; i<filesList.size(); i++){
-        result[i] = (make_pair(
+        result[i] = ( make_pair(
             i, hm->compareHistograms(this->dbHistLocation.toStdString() + "selected.xml", filesList.at(i).toStdString(), 3))
         );
     }

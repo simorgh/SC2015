@@ -8,4 +8,22 @@ L’objectiu d’aquesta pràctica és implementar una aplicació que permeti ce
 
 * Extracció de l’histograma de les imatges.
 * Cerca d’imatges similars a partir d’una imatge exemple.
-* Persistència en les dades extretes de la imatge.Cadascuna de les funcionalitats anteriors es detallarà a les següent seccions.
+* Persistència en les dades extretes de la imatge.
+
+###### User instructions
+```
+# Persistence-Tree structure:
+
+	['db']
+	  |____ ['images']
+  	  |	
+  	  |____ ['histrograms']
+  	  |
+  	  |____ '.id' (hidden)
+
+# Loadfile generation instruc. for a new set of images 'image_db':
+
+:pwd$ cd /absolute_path_to_db/image_db/
+:absolute_path_to_db$ find -name *.jpg >> ./path_to_project_folder/filename.txt
+
+```
