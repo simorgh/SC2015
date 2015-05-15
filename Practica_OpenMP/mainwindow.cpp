@@ -43,41 +43,18 @@ void MainWindow::on_importDatabase_triggered() {
     QString tempFileName;
     cout << "Loading images..." << endl;
 
-#pragma omp parallel
-{
-    #pragma omp single
-    {
+#pragma omp parallel for
     for(int i=0; i<filesList.size(); i++) {
-
-        #pragma omp task
-        {
         QFileInfo fileInfo = filesList[i];
         QFile::copy(fileInfo.absoluteFilePath(), this->dbImageLocation + QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
         items.append(QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
 
-        }
-
-
-        #pragma omp taskwait
-        {
-            #pragma omp task
-            {
-                /// extracting img histogram ...
-                //string pathHist = this->dbHistLocation.toStdString() + "hist_" + number + ".xml";
-                //string pathIm = this->dbImageLocation.toStdString() + nameIm;
-
-                //cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
-                hm->extractHistogram(this->dbImageLocation.toStdString() + "img_"  + format("%06d", i+identifier) + ".jpg",
-                                     this->dbHistLocation.toStdString()  + "hist_" + format("%06d", i+identifier) + ".xml");
-
-            }
-//            this->identifier = i;
-            }
-
+        //cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
+        hm->extractHistogram(this->dbImageLocation.toStdString() + "img_"  + format("%06d", i+identifier) + ".jpg",
+                             this->dbHistLocation.toStdString()  + "hist_" + format("%06d", i+identifier) + ".xml");
     }
-    }
-}
-    this->identifier = 30610;
+
+    this->identifier = ui->listWidget->count();
 
     /// store identifier on disc
     ofstream out;
