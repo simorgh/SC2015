@@ -15,7 +15,7 @@ L’objectiu d’aquesta pràctica és implementar una aplicació que permeti ce
 #### Used Image set
  * http://www.vision.caltech.edu/Image_Datasets/Caltech256/
 
-# Persistence-Tree structure:
+#### Persistence-Tree structure:
 ```
 	['db']
 	  |____ ['images']
@@ -25,7 +25,7 @@ L’objectiu d’aquesta pràctica és implementar una aplicació que permeti ce
   	  |____ '.id' (hidden)
 ```
 
-#### Loadfile generation instruc. for a new set of images '256_ObjectCategories':
+#### Loadfile generation instruc. for a new set of images 256_ObjectCategories
 ```
 :pwd$ cd /absolute_path_to_db/256_ObjectCategories/
 :256_ObjectCategories$ find -name *.jpg >> ./path_to_project_folder/filename.txt
