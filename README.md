@@ -13,7 +13,6 @@ L’objectiu d’aquesta pràctica és implementar una aplicació que permeti ce
 ###### User instructions
 
 ## Used Image set
-
 *http://www.vision.caltech.edu/Image_Datasets/Caltech256/
 
 ```
@@ -37,7 +36,6 @@ MacBook-Pro:256_ObjectCategories user$ find . -name *.jpg >> ../filename.txt
 #### see 'example_list.txt' in order to make an idea
 
 ### Install instructions for OpenCV + QT
-
 *Ubuntu: http://xrong.org/notes/install-Qt-OpenCV-Ubuntu
 *Windows: http://stackoverflow.com/questions/14919186/qt-creator-5-0-1-with-opencv-2-3-4-on-windows
 *Mac: https://drthitirat.wordpress.com/2014/09/21/install-opencv-2-4-9-and-qt-5-3-2-on-mac-osx-10-9-5-and-xcode-6-0-1/
