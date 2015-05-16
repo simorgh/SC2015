@@ -26,4 +26,6 @@ L’objectiu d’aquesta pràctica és implementar una aplicació que permeti ce
 :pwd$ cd /absolute_path_to_db/image_db/
 :absolute_path_to_db$ find -name *.jpg >> ./path_to_project_folder/filename.txt
 
+# OSX requires '.' as it does not infere current dir
+MacBook-Pro:sc2015 user$ find . -name *.jpg >> filename.txt
 ```
