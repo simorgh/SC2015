@@ -7,10 +7,12 @@ using namespace cv;
  * @brief histogramManager::extractHistogram
  * @param image
  * @param xml
+ * @return
  */
-void histogramManager::extractHistogram(string image, string xml){
+hist_data histogramManager::extractHistogram(string image, string xml){
     Mat src_test, hsv_test;
     vector<Mat> hsv_planes;
+    hist_data hist;
 
     // Load image
     src_test = imread(image, CV_LOAD_IMAGE_COLOR);
@@ -34,26 +36,30 @@ void histogramManager::extractHistogram(string image, string xml){
     float vrang[] = {0, 256};
     const float *v_ranges = { vrang };
 
-    // Histograms
-    Mat hist_h, hist_s, hist_v;
+
+    // Create histogram struct
+
+    hist.fname = image;
 
     // Calculate the histogram for the H image
-    calcHist( &hsv_planes[0], 1, 0, Mat(), hist_h, 1, &h_bins, &h_ranges, true, false );
-    normalize( hist_h, hist_h, 0, 1, NORM_MINMAX, -1, Mat() );
+    calcHist( &hsv_planes[0], 1, 0, Mat(), hist.h, 1, &h_bins, &h_ranges, true, false );
+    normalize( hist.h, hist.h, 0, 1, NORM_MINMAX, -1, Mat() );
 
-    calcHist( &hsv_planes[1], 1, 0, Mat(), hist_s, 1, &s_bins, &s_ranges, true, false );
-    normalize( hist_s, hist_s, 0, 1, NORM_MINMAX, -1, Mat() );
+    calcHist( &hsv_planes[1], 1, 0, Mat(), hist.s, 1, &s_bins, &s_ranges, true, false );
+    normalize( hist.s, hist.s, 0, 1, NORM_MINMAX, -1, Mat() );
 
-    calcHist( &hsv_planes[2], 1, 0, Mat(), hist_v, 1, &v_bins, &v_ranges, true, false );
-    normalize( hist_v, hist_v, 0, 1, NORM_MINMAX, -1, Mat() );
+    calcHist( &hsv_planes[2], 1, 0, Mat(), hist.v, 1, &v_bins, &v_ranges, true, false );
+    normalize( hist.v, hist.v, 0, 1, NORM_MINMAX, -1, Mat() );
 
     // Store histograms on disc
     FileStorage fs(xml, FileStorage::WRITE);
-    fs << "imageName" << image;
-    fs << "hist_h" << hist_h;
-    fs << "hist_s" << hist_s;
-    fs << "hist_v" << hist_v;
+    fs << "imageName" << hist.fname;
+    fs << "hist_h" << hist.h;
+    fs << "hist_s" << hist.s;
+    fs << "hist_v" << hist.v;
     fs.release();
+
+    return hist;
 }
 
 /**
@@ -99,7 +105,7 @@ double histogramManager::compareHistograms(hist_data hist1, hist_data hist2, int
  */
 hist_data histogramManager::loadHistogram(string h_path) {
     hist_data hist;
-
+    cout << h_path << endl;
     // Read histogram
     FileStorage fs(h_path, FileStorage::READ);
 

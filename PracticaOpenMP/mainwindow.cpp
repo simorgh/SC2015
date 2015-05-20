@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     this->dbHistLocation = "../db/histograms/";
     this->dbImageLocation = "../db/images/";
+    //hm->histograms = new <hist_data> (hm->SIZE);
     loadData();
 }
 
@@ -40,18 +41,19 @@ void MainWindow::on_importDatabase_triggered() {
     while (getline(file, str)) filesList << QString::fromStdString("../"+str);
     file.close();
 
-    QString tempFileName;
+    //hm->histograms.resize(hm->histograms.size() + filesList.size());
     cout << "Loading images..." << endl;
 
-#pragma omp parallel for
+
+//#pragma omp parallel for
     for(int i=0; i<filesList.size(); i++) {
         QFileInfo fileInfo = filesList[i];
         QFile::copy(fileInfo.absoluteFilePath(), this->dbImageLocation + QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
         items.append(QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
 
-        //cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
-        hm->extractHistogram(this->dbImageLocation.toStdString() + "img_"  + format("%06d", i+identifier) + ".jpg",
-                             this->dbHistLocation.toStdString()  + "hist_" + format("%06d", i+identifier) + ".xml");
+        cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
+        hm->histograms[i+identifier] =  hm->extractHistogram(this->dbImageLocation.toStdString() + "img_"  + format("%06d", i+identifier) + ".jpg",
+                    this->dbHistLocation.toStdString()  + "hist_" + format("%06d", i+identifier) + ".xml");
     }
 
     /// update + store identifier on disc
@@ -92,15 +94,14 @@ void MainWindow::on_selectImage_triggered() {
     ui->label->show();
 
     // selected image doesn't have to belong to the db so we must extract its histogram
-    hm->extractHistogram(s.toStdString(), "selected.xml");
-    hist_data selected = hm->loadHistogram("selected.xml");
+    hist_data selected = hm->extractHistogram(s.toStdString(), "selected.xml");
 
     /// let's compare image histograms...
     vector< pair<int, double> > result(identifier);
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int i=0; i < identifier; i++){//filesList.size(); i++){
         result[i] = make_pair(
-            i, hm->compareHistograms(selected, hm->histograms->at(i), 3)
+            i, hm->compareHistograms(selected, hm->histograms[i], 3)
         );
     }
     remove("selected.xml"); // delete file
@@ -205,9 +206,10 @@ void MainWindow::loadData(){
             getDir(files, XML);
 
             // load hisotrams to RAM
-            hm->histograms->reserve(this->identifier-1);
+            //hm->histograms.resize(this->identifier-1);
+
             for(int i=0; files.size(); i++){
-                hm->histograms->at(i) = hm->loadHistogram(files.at(i).toStdString());
+                hm->histograms[i]= hm->loadHistogram(files.at(i).toStdString());
             }
 
             // load images

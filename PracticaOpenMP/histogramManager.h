@@ -16,9 +16,11 @@ struct hist_data {
 
 class histogramManager  {
 public:
-    std::vector <hist_data> *histograms;
+    const int SIZE = 32000;
+    std::vector<hist_data> histograms;
 
-    void extractHistogram(std::string image,std::string xml);
+
+    hist_data extractHistogram(std::string image,std::string xml);
     double compareHistograms(hist_data hist1, hist_data hist2, int method);
     hist_data loadHistogram(std::string h_path);
 };
