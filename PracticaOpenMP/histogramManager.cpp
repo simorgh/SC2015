@@ -63,15 +63,14 @@ void histogramManager::extractHistogram(string image, string xml){
  * @param method
  * @return
  */
-double histogramManager::compareHistograms(string hist1, string hist2, int method){
+double histogramManager::compareHistograms(hist_data hist1, hist_data hist2, int method){
     // Load two images with different environment settings
-
     int compare_method;
 
     if (method == 1)
       compare_method = CV_COMP_CORREL; // Correlation
     else if (method == 2)
-      compare_method = CV_COMP_CHISQR; // Chi-Square
+      compare_method = CV_COMP_CHISQR;  // Chi-Square
     else if (method == 3)
       compare_method = CV_COMP_INTERSECT; // Intersection
     else if (method == 4)
@@ -81,37 +80,35 @@ double histogramManager::compareHistograms(string hist1, string hist2, int metho
       return -1;
     }
 
-    Mat hist_h1, hist_s1, hist_v1;
-    Mat hist_h2, hist_s2, hist_v2;
-
-    // Read histogram1
-    FileStorage fs1(hist1, FileStorage::READ);
-
-    string fname1;
-    fs1["imageName"] >> fname1;
-    fs1["hist_h"] >> hist_h1;
-    fs1["hist_s"] >> hist_s1;
-    fs1["hist_v"] >> hist_v1;
-    fs1.release();
-
-    // Read histogram2
-    FileStorage fs2(hist2, FileStorage::READ);
-
-    string fname2;
-    fs2["imageName"] >> fname2;
-    fs2["hist_h"] >> hist_h2;
-    fs2["hist_s"] >> hist_s2;
-    fs2["hist_v"] >> hist_v2;
-    fs2.release();
-
     // Histogram comparison
-    double comphist_h = compareHist( hist_h1, hist_h2, compare_method);
-    double comphist_s = compareHist( hist_s1, hist_s2, compare_method);
-    double comphist_v = compareHist( hist_v1, hist_v2, compare_method);
+    double comphist_h = compareHist( hist1.h, hist2.h, compare_method);
+    double comphist_s = compareHist( hist1.s, hist2.s, compare_method);
+    double comphist_v = compareHist( hist1.v, hist2.v, compare_method);
 
     // Compare
-    //cout << "Comparing " << fname1 << " and " << fname2 << endl;
+    //cout << "Comparing " << hist1.fname << " and " << hist2.fname << endl;
     //cout << "Method " << method << ", Result " << comphist_h + comphist_s + comphist_v << endl;
 
     return comphist_h + comphist_s + comphist_v;
+}
+
+/**
+ * @brief histogramManager::loadHistogram
+ * @param h_path
+ * @return
+ */
+hist_data histogramManager::loadHistogram(string h_path) {
+    hist_data hist;
+
+    // Read histogram
+    FileStorage fs(h_path, FileStorage::READ);
+
+    fs["imageName"] >> hist.fname;
+    fs["hist_h"] >> hist.h;
+    fs["hist_s"] >> hist.s;
+    fs["hist_v"] >> hist.v;
+    fs.release();
+
+    return hist;
+
 }

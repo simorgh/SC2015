@@ -91,20 +91,19 @@ void MainWindow::on_selectImage_triggered() {
     ui->label->setPixmap(QPixmap::fromImage(image));
     ui->label->show();
 
-    /// selected image doesn't have to belong to the db so we must extract its histogram
-    hm->extractHistogram(s.toStdString(),this->dbHistLocation.toStdString()+"selected.xml");
-    QList<QString> filesList;
-    getDir(filesList, XML);
+    // selected image doesn't have to belong to the db so we must extract its histogram
+    hm->extractHistogram(s.toStdString(), "selected.xml");
+    hist_data selected = hm->loadHistogram("selected.xml");
 
     /// let's compare image histograms...
-    vector< pair<int, double> > result(filesList.size());
-
+    vector< pair<int, double> > result(identifier);
 #pragma omp parallel for
-    for (int i=0; i<filesList.size(); i++){
-        result[i] = ( make_pair(
-            i, hm->compareHistograms(this->dbHistLocation.toStdString() + "selected.xml", filesList.at(i).toStdString(), 3))
+    for (int i=0; i < identifier; i++){//filesList.size(); i++){
+        result[i] = make_pair(
+            i, hm->compareHistograms(selected, hm->histograms->at(i), 3)
         );
     }
+    remove("selected.xml"); // delete file
 
     //cout << "=============== RESULTS ===============" << endl;
     sort(result.begin(), result.end(), custom_sort);
@@ -194,23 +193,32 @@ void MainWindow::loadData(){
         if(!QDir("../db/images").exists()) QDir().mkdir("../db/images");
         if(!QDir("../db/histograms").exists()) QDir().mkdir("../db/histograms");
 
-    } else { /// tree exists
+    } else { // tree exists
         ifstream in;
         in.open ("../db/.id");
-        if(in.is_open()){   ///OK!
-            /// retrieve identifier!
+        if(in.is_open()){   //OK!
+
+            // retrieve identifier!
             in >> this->identifier;
 
-            /// load images
-            QStringList backup;
-            getDir(backup, JPG);
-            ui->listWidget->addItems(backup);
+            QStringList files;
+            getDir(files, XML);
+
+            // load hisotrams to RAM
+            hm->histograms->reserve(this->identifier-1);
+            for(int i=0; files.size(); i++){
+                hm->histograms->at(i) = hm->loadHistogram(files.at(i).toStdString());
+            }
+
+            // load images
+            getDir(files, JPG);
+            ui->listWidget->addItems(files);
             ui->listWidget->setEnabled(true);
             ui->selectImage->setEnabled(true);
             in.close();
-        } else this->identifier = 1; /// in case of '.id' file error
-    }
 
+        } else this->identifier = 1; // in case of '.id' file error
+    }
 }
 
 /**
@@ -238,7 +246,7 @@ void MainWindow::getDir(QList<QString> &fileList, F_TYPE type) {
         cout << "Error opening "  << endl;
     }
 
-    /// retrieve file into fileList
+    // retrieve file into fileList
     while ((dirp = readdir(dp)) != NULL) {
         int len = strlen(dirp->d_name);
         if (len >= 4) {
@@ -249,6 +257,7 @@ void MainWindow::getDir(QList<QString> &fileList, F_TYPE type) {
             }
         }
     }
+
     closedir(dp);
     sort(fileList.begin(), fileList.end());
 }
