@@ -118,7 +118,7 @@ void MainWindow::on_selectImage_triggered() {
         int num = (result[id].first) + 1;
         cout << "Num =  "<< num << endl;
         if(num < this->identifier) {
-            results << this->dbImageLocation + QString::fromStdString("img_" + format("%06d", num) + ".jpg");
+            results << QString::fromStdString(DB_IMG_LOC + "img_" + format("%06d", num) + ".jpg");
             count++;
         }
         id++;
@@ -170,7 +170,7 @@ void MainWindow::showResults(QList<QString> &fileList){
 }
 
 void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
-     QString path = this->dbImageLocation + item->text();
+     QString path = QString::fromStdString(DB_IMG_LOC) + item->text();
      Mat img;
      img = imread(path.toStdString(), CV_LOAD_IMAGE_UNCHANGED );
      cvtColor(img, img, CV_BGR2RGB);
