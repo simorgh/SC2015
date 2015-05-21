@@ -7,7 +7,7 @@ using namespace cv;
  * @brief histogramManager::extractHistogram
  * @param image
  * @param xml
- * @return
+ * @return hist_data
  */
 hist_data histogramManager::extractHistogram(string image, string xml){
     Mat src_test, hsv_test;
@@ -36,9 +36,7 @@ hist_data histogramManager::extractHistogram(string image, string xml){
     float vrang[] = {0, 256};
     const float *v_ranges = { vrang };
 
-
     // Create histogram struct
-
     hist.fname = image;
 
     // Calculate the histogram for the H image
@@ -67,7 +65,7 @@ hist_data histogramManager::extractHistogram(string image, string xml){
  * @param hist1
  * @param hist2
  * @param method
- * @return
+ * @return value
  */
 double histogramManager::compareHistograms(hist_data hist1, hist_data hist2, int method){
     // Load two images with different environment settings
@@ -105,7 +103,7 @@ double histogramManager::compareHistograms(hist_data hist1, hist_data hist2, int
  */
 hist_data histogramManager::loadHistogram(string h_path) {
     hist_data hist;
-    cout << h_path << endl;
+
     // Read histogram
     FileStorage fs(h_path, FileStorage::READ);
 
@@ -116,5 +114,4 @@ hist_data histogramManager::loadHistogram(string h_path) {
     fs.release();
 
     return hist;
-
 }

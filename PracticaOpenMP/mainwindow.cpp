@@ -8,13 +8,11 @@ using namespace cv;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    this->dbHistLocation = "../db/histograms/";
-    this->dbImageLocation = "../db/images/";
-    //hm->histograms = new <hist_data> (hm->SIZE);
     loadData();
 }
 
 MainWindow::~MainWindow() {
+    histograms.clear();
     delete ui;
 }
 
@@ -41,22 +39,25 @@ void MainWindow::on_importDatabase_triggered() {
     while (getline(file, str)) filesList << QString::fromStdString("../"+str);
     file.close();
 
-    //hm->histograms.resize(hm->histograms.size() + filesList.size());
-    cout << "Loading images..." << endl;
+    // load hisotrams to RAM
+    histograms.resize(histograms.size() + filesList.size());
+    cout << "histograms size is now " << histograms.size() << endl;
+    cout << "\t> Importing images..." << endl;
 
-
-//#pragma omp parallel for
+    time.start();
+    #pragma omp parallel for schedule(dynamic, omp_get_num_threads())
     for(int i=0; i<filesList.size(); i++) {
         QFileInfo fileInfo = filesList[i];
-        QFile::copy(fileInfo.absoluteFilePath(), this->dbImageLocation + QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
+        QFile::copy(fileInfo.absoluteFilePath(), QString::fromStdString(DB_IMG_LOC + "img_" + format("%06d", i+identifier) + ".jpg"));
         items.append(QString::fromStdString("img_" + format("%06d", i+identifier) + ".jpg"));
 
-        cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
-        hm->histograms[i+identifier] =  hm->extractHistogram(this->dbImageLocation.toStdString() + "img_"  + format("%06d", i+identifier) + ".jpg",
-                    this->dbHistLocation.toStdString()  + "hist_" + format("%06d", i+identifier) + ".xml");
+        //cout << "\tGenerating histogram " << i+identifier << "\tThread: " << omp_get_thread_num() << endl;
+        histograms[i+(identifier-1)] =  hm->extractHistogram(DB_IMG_LOC + "img_"  + format("%06d", i+identifier) + ".jpg",
+                    DB_HIST_LOC  + "hist_" + format("%06d", i+identifier) + ".xml");
     }
+    cout << "Elapsed time: " << time.elapsed() << endl;
 
-    /// update + store identifier on disc
+    // update + store identifier on disc
     this->identifier += filesList.size();
 
     ofstream out;
@@ -82,35 +83,36 @@ void MainWindow::on_selectImage_triggered() {
                           QString(), tr("Image files (*.jpg *.png);;All Files (*)"));
     if(s == NULL) return;
 
-    cout <<"SELETED IMAGE is "<< s.toStdString().c_str()<< endl;
     Mat img;
     img = imread(s.toStdString(), CV_LOAD_IMAGE_COLOR);
     cvtColor(img, img, CV_BGR2RGB);
     QImage image = QImage((uchar*) img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
     image = image.scaled(ui->label->width(),ui->label->height());
 
-    //cout << "Selecting image " << path.toStdString().c_str() << endl;
     ui->label->setPixmap(QPixmap::fromImage(image));
     ui->label->show();
 
-    // selected image doesn't have to belong to the db so we must extract its histogram
+    /* selected image doesn't have to belong to the db so we must extract its histogram */
     hist_data selected = hm->extractHistogram(s.toStdString(), "selected.xml");
+    ///cout << "SELETED IMAGE is " << selected.fname.c_str() << endl;
 
-    /// let's compare image histograms...
+    // let's compare image histograms...
     vector< pair<int, double> > result(identifier);
-//#pragma omp parallel for
-    for (int i=0; i < identifier; i++){//filesList.size(); i++){
+    time.start();
+    #pragma omp parallel for schedule(dynamic, omp_get_num_threads())
+    for (int i=0; i < histograms.size(); i++){
         result[i] = make_pair(
-            i, hm->compareHistograms(selected, hm->histograms[i], 3)
+            i, hm->compareHistograms(selected, histograms[i], 3)
         );
     }
+    cout << "Elapsed time: " << time.elapsed() << endl;
     remove("selected.xml"); // delete file
 
-    //cout << "=============== RESULTS ===============" << endl;
+    cout << "=============== RESULTS ===============" << endl;
     sort(result.begin(), result.end(), custom_sort);
     QList<QString> results;
 
-    /// get absolute path for each of N=4 top matches
+    // get absolute path for each of N=4 top matches
     int count =0, id = 0;
     while(count < 4){
         int num = (result[id].first) + 1;
@@ -134,6 +136,7 @@ void MainWindow::on_selectImage_triggered() {
 void MainWindow::showResults(QList<QString> &fileList){
     if(fileList.empty()) return;
     QWidget *imagesWidget = new QWidget();
+    imagesWidget->setWindowTitle("TOP 4 COINCIDENCES");
     QGridLayout *grid = new QGridLayout(imagesWidget);
     QImage copy;
     QString tempFileName;
@@ -202,19 +205,22 @@ void MainWindow::loadData(){
             // retrieve identifier!
             in >> this->identifier;
 
-            QStringList files;
-            getDir(files, XML);
+            QStringList img_list, hist_list;
+            getDir(hist_list, XML);
 
             // load hisotrams to RAM
-            //hm->histograms.resize(this->identifier-1);
-
-            for(int i=0; files.size(); i++){
-                hm->histograms[i]= hm->loadHistogram(files.at(i).toStdString());
+            this->histograms.resize(hist_list.size());
+            time.start();
+            #pragma omp parallel for schedule(dynamic, omp_get_num_threads())
+            for(int i=0; i<hist_list.size(); i++){
+                //cout << i << "\t > Loading HIST from " << hist_list.at(i).toStdString() << "\tThread: " << omp_get_thread_num() << endl;
+                histograms[i]= hm->loadHistogram(hist_list.at(i).toStdString());
             }
+            cout << "Elapsed time: " << time.elapsed() << endl;
 
             // load images
-            getDir(files, JPG);
-            ui->listWidget->addItems(files);
+            getDir(img_list, JPG);
+            ui->listWidget->addItems(img_list);
             ui->listWidget->setEnabled(true);
             ui->selectImage->setEnabled(true);
             in.close();
@@ -237,15 +243,15 @@ void MainWindow::getDir(QList<QString> &fileList, F_TYPE type) {
     string ext;
 
     if(type == XML) {
-        location = this->dbHistLocation;
+        location = QString::fromStdString(this->DB_HIST_LOC);
         ext = ".xml";
     } else {
-        location = this->dbImageLocation;
+        location = QString::fromStdString(this->DB_IMG_LOC);
         ext = ".jpg";
     }
 
     if((dp  = opendir(location.toStdString().c_str())) == NULL) {
-        cout << "Error opening "  << endl;
+        cout << "Error opening " << endl;
     }
 
     // retrieve file into fileList
@@ -255,7 +261,6 @@ void MainWindow::getDir(QList<QString> &fileList, F_TYPE type) {
             if (strcmp (ext.c_str(), &(dirp->d_name[len-4])) == 0) {
                 if (type == XML) fileList << (location + QString::fromStdString(dirp->d_name));
                 else fileList << QString::fromStdString(dirp->d_name);
-                //cout << "added " <<  (location + QString::fromStdString(dirp->d_name)).toStdString().c_str() << endl;
             }
         }
     }

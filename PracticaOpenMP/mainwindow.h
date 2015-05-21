@@ -17,6 +17,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <histogramManager.h>
+#include <QTime>
+
 
 namespace Ui {
     class MainWindow;
@@ -26,6 +28,13 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
+
+    QTime time; // used to verify timing performance
+    std::vector <hist_data> histograms;
+
+    const std::string DB_HIST_LOC = "../db/histograms/";
+    const std::string DB_IMG_LOC  = "../db/images/";
+
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
