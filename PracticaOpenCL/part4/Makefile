@@ -31,10 +31,10 @@ endif
  
 
 all:
-	$(CC) $(CFLAGS) $(INCL_P) -c $(SRC)
-	$(CC) $(CFLAGS) *.o -o $(EXEC) $(LIBS)
-	#$(CC) $(CFLAGS_AMD) -I $(INC_DIRS) -c $(SRC)
-	#$(CC) $(CFLAGS_AMD) *.o -o $(EXEC) -L $(LIB_DIRS) $(LIB)
+	#$(CC) $(CFLAGS) $(INCL_P) -c $(SRC)
+	#$(CC) $(CFLAGS) *.o -o $(EXEC) $(LIBS)
+	$(CC) $(CFLAGS_AMD) -I $(INC_DIRS) -c $(SRC)
+	$(CC) $(CFLAGS_AMD) *.o -o $(EXEC) -L $(LIB_DIRS) $(LIB)
 	rm -f *.o
 
 amd:
